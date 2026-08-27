@@ -2,74 +2,89 @@ import streamlit as st
 import database
 import pandas as pd
 
-# Configuración de página - Estética Tarántula Taller
+# Configuración de página - Estética Tarántula Taller (Basado en Safelight Berlin)
 st.set_page_config(page_title="Tarántula Taller", page_icon="🕷️", layout="centered")
 
 st.markdown('''
     <style>
-    /* Fondo completamente negro como la app de referencia */
-    .stApp { background-color: #0b0b0b; color: #ffffff; }
-    
-    /* Tipografía más limpia */
-    html, body, [class*="css"] {
-        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    /* 1. Importar la fuente exacta que usa Safelight Berlin (Arimo) */
+    @import url('https://fonts.googleapis.com/css2?family=Arimo:ital,wght@0,400;0,700;1,700&display=swap');
+
+    /* 2. Fondo con el gradiente oscuro exacto de su código y fuente base */
+    .stApp { 
+        background-image: linear-gradient(100deg, #000000 40%, #212121 63%, #000000 79%);
+        color: #ffffff; 
+        font-family: 'Arimo', sans-serif;
+        font-size: 20px;
     }
     
-    /* Ocultar elementos por defecto de Streamlit para más limpieza */
+    /* 3. Títulos en cursiva, mayúsculas y negrita (Igual a Safelight) */
+    h1, h2, h3, .st-emotion-cache-10trnc { 
+        font-family: 'Arimo', sans-serif !important;
+        font-weight: 700 !important; 
+        font-style: italic !important;
+        text-transform: uppercase !important;
+        letter-spacing: -0.025em;
+        color: #ffffff !important;
+    }
+    
+    /* Ocultar elementos por defecto de Streamlit */
     header {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Estilizar los botones primarios (Verde brillante tipo Spotify/Safelight) */
+    /* 4. Botones completamente CUADRADOS, en blanco y negro, estilo industrial */
     .stButton>button { 
-        background-color: #1ed760; 
-        color: #000000; 
-        border-radius: 30px; 
+        background-color: #ffffff !important; 
+        color: #000000 !important; 
+        border-radius: 0px !important; /* Bordes rectos */
         border: none; 
-        font-weight: 700;
-        padding: 10px 24px;
+        font-family: 'Arimo', sans-serif !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em;
+        padding: 12px 24px;
         width: 100%;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
     }
     .stButton>button:hover {
-        background-color: #1abc54;
-        color: #000000;
-        transform: scale(1.02);
+        background-color: #cccccc !important;
+        transform: scale(1.01);
     }
     
-    /* Tarjetas de catálogo */
+    /* Tarjetas de catálogo más crudas */
     div[data-testid="stVerticalBlock"] div[data-testid="stHorizontalBlock"] {
-        background-color: #161616;
+        background-color: transparent;
+        border: 1px solid #333333;
         padding: 15px;
-        border-radius: 15px;
+        border-radius: 0px;
         margin-bottom: 10px;
         align-items: center;
     }
     
-    /* Textos secundarios en gris */
-    p { color: #a0a0a0; margin-bottom: 0rem; }
-    h1, h2, h3 { color: #ffffff; font-weight: 600; }
+    /* Textos secundarios */
+    p { color: #d0d0d0; margin-bottom: 0rem; font-family: 'Arimo', sans-serif; }
     
-    /* Inputs y formularios oscuros (Aplica para la pestaña de Revelado) */
-    .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-        background-color: #161616;
-        color: white;
-        border: 1px solid #333;
-        border-radius: 10px;
+    /* Inputs y formularios cuadrados */
+    .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"], .stNumberInput input {
+        background-color: transparent !important;
+        color: white !important;
+        border: 1px solid #555 !important;
+        border-radius: 0px !important;
+        font-family: 'Arimo', sans-serif;
     }
     
-    /* Estilos para los expanders (Aplica para la pestaña de Bóveda) */
+    /* Estilos para los expanders (Bóveda) */
     [data-testid="stExpander"] {
-        background-color: #161616;
-        border: 1px solid #333;
-        border-radius: 15px;
+        background-color: transparent;
+        border: 1px solid #555;
+        border-radius: 0px;
     }
-    [data-testid="stExpander"] summary { color: #ffffff; font-weight: bold; }
-    [data-testid="stExpander"] p { color: #a0a0a0; }
+    [data-testid="stExpander"] summary { color: #ffffff; font-weight: 700; font-style: italic; text-transform: uppercase; }
     
     /* Pestañas (Tabs) */
-    .stTabs [data-baseweb="tab-list"] { background-color: #0b0b0b; }
-    .stTabs [data-baseweb="tab"] { color: #a0a0a0; }
-    .stTabs [aria-selected="true"] { color: #ffffff; border-bottom: 2px solid #1ed760; }
+    .stTabs [data-baseweb="tab-list"] { background-color: transparent; }
+    .stTabs [data-baseweb="tab"] { color: #888888; font-family: 'Arimo', sans-serif; text-transform: uppercase; font-weight: 700; font-style: italic; }
+    .stTabs [aria-selected="true"] { color: #ffffff; border-bottom: 3px solid #ffffff !important; }
     
     </style>
 ''', unsafe_allow_html=True)
@@ -91,7 +106,7 @@ def logout():
 
 # ----------------- PANTALLA DE LOGIN / REGISTRO -----------------
 if not st.session_state['user_id']:
-    st.title("🕷️ Tarántula Taller")
+    st.title("Tarántula Taller")
     st.write("Laboratorio de fotografía analógica. Revelado, digitalización y venta de rollos.")
     
     pestanas_auth = st.tabs(["Iniciar Sesión", "Crear Cuenta"])
@@ -136,7 +151,7 @@ else:
 
     # ---- VISTA DE ADMINISTRADOR ----
     if st.session_state['rol'] == 'admin':
-        st.subheader("🛠️ Panel de Control - Tarántula Taller")
+        st.subheader("Panel de Control - Tarántula Taller")
         
         tab_admin1, tab_admin2 = st.tabs(["Órdenes y Bóveda", "Inventario"])
         
@@ -161,11 +176,11 @@ else:
 
     # ---- VISTA DE CLIENTE ----
     else:
-        tab_cliente1, tab_cliente2, tab_cliente3 = st.tabs(["🛒 Catálogo", "📦 Revelado", "📁 Bóveda"])
+        tab_cliente1, tab_cliente2, tab_cliente3 = st.tabs(["Catálogo", "Revelado", "Bóveda"])
         
         with tab_cliente1:
-            # Solución al error TypeError usando HTML directo en lugar de st.image
-            st.markdown('<img src="https://images.unsplash.com/photo-1549264875-e854ba0d10b7?w=800&q=80" style="width: 100%; border-radius: 15px; margin-bottom: 15px;" alt="Banner">', unsafe_allow_html=True)
+            # Solución al error TypeError usando HTML directo y eliminando bordes redondeados
+            st.markdown('<img src="https://images.unsplash.com/photo-1549264875-e854ba0d10b7?w=800&q=80" style="width: 100%; margin-bottom: 15px; border-radius: 0px;" alt="Banner">', unsafe_allow_html=True)
             st.write("Laboratorio de fotografía analógica. Revelado, digitalización y venta de rollos.")
             st.markdown("<br>", unsafe_allow_html=True)
             
@@ -174,14 +189,15 @@ else:
             for index, row in cat_df.iterrows():
                 c1, c2, c3 = st.columns([1, 4, 1])
                 with c1:
+                    # Cuadro crudo en lugar de burbuja redondeada
                     st.markdown('''
-                        <div style="background-color:#d9d9d9; height:60px; width:60px; border-radius:15px; display:flex; align-items:center; justify-content:center;">
+                        <div style="background-color:#222; height:60px; width:60px; border-radius:0px; border: 1px solid #444; display:flex; align-items:center; justify-content:center;">
                             <span style="color:#000; font-size:24px;">🎞️</span>
                         </div>
                     ''', unsafe_allow_html=True)
                 with c2:
-                    st.markdown(f"<span style='color:white; font-weight:bold; font-size:16px;'>{row['nombre_producto']}</span>", unsafe_allow_html=True)
-                    st.markdown(f"<span style='color:#a0a0a0; font-size:13px;'>{row['categoria']}<br>$ {row['precio']:,.0f}</span>", unsafe_allow_html=True)
+                    st.markdown(f"<span style='color:white; font-family: Arimo, sans-serif; font-weight:bold; font-size:16px; text-transform:uppercase;'>{row['nombre_producto']}</span>", unsafe_allow_html=True)
+                    st.markdown(f"<span style='color:#a0a0a0; font-family: Arimo, sans-serif; font-size:14px;'>{row['categoria']}<br>$ {row['precio']:,.0f}</span>", unsafe_allow_html=True)
                 with c3:
                     st.markdown("<br>", unsafe_allow_html=True)
                     if st.button("＋", key=f"btn_{row['id']}"):
