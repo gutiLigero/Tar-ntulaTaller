@@ -17,14 +17,14 @@ def init_db():
         rol TEXT
     )''')
     
-    # Insertar un administrador por defecto (Para que puedas entrar al panel de control)
+    # Insertar admin
     cursor.execute("SELECT COUNT(*) FROM usuarios WHERE rol='admin'")
     if cursor.fetchone()[0] == 0:
         admin_pass = hashlib.sha256("admin123".encode()).hexdigest()
         cursor.execute("INSERT INTO usuarios (nombre, email, password, telefono, rol) VALUES (?, ?, ?, ?, ?)",
-                       ("Admin TTT", "admin@lab.com", admin_pass, "0000000000", "admin"))
+                       ("Admin Tarantula", "admin@taller.com", admin_pass, "0000000000", "admin"))
 
-    # Tabla de Catálogo (Stock de Rollos)
+    # Tabla de Catálogo
     cursor.execute('''CREATE TABLE IF NOT EXISTS catalogo (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         nombre_producto TEXT,
@@ -33,19 +33,26 @@ def init_db():
         stock INTEGER
     )''')
     
-    # Insertar inventario inicial (Inspirado en tu catálogo base)
+    # Insertar los 16 rollos exactos de las imágenes
     cursor.execute("SELECT COUNT(*) FROM catalogo")
     if cursor.fetchone()[0] == 0:
         productos = [
-            ("Kodak Double X (Rebobinado)", "Blanco y Negro", 40000, 15),
-            ("Kodak Gold 200", "Color 35mm", 60000, 20),
-            ("Kodak Portra 400", "Color Profesional", 100000, 10),
-            ("Kentmere 400", "Blanco y Negro", 45000, 12),
-            ("Kodak Colorplus 200", "Color 35mm", 60000, 25),
-            ("Kodak Tri-X 400 (120)", "Medio Formato B/N", 65000, 8),
-            ("Kodak Portra 800 (120)", "Medio Formato Color", 120000, 5),
-            ("Fujifilm 200", "Color 35mm", 50000, 14),
-            ("Ilford FP4+ 125", "Blanco y Negro", 55000, 10),
+            ("Kodak Double X 250 (Rebobinado)", "Película cinematográfica blanco y negro", 40000, 15),
+            ("Kodak Gold 200", "Película color con saturación cálida", 60000, 20),
+            ("Kodak Portra 400", "Película profesional color con tonos", 100000, 10),
+            ("Kentmere 400 (Rebobinado)", "Película blanco y negro económica", 45000, 12),
+            ("Kodak Colorplus 200", "Película color de ISO medio", 60000, 25),
+            ("Kodak Tri-X 400 120", "Película formato medio blanco y negro", 65000, 8),
+            ("Kodak Portra 800 120", "Película formato medio de alta sensi...", 120000, 5),
+            ("Kodak Portra 400 120", "Versión formato medio de la películ...", 100000, 5),
+            ("Kodak Ultramax 400", "Película color de alta sensibilidad", 65000, 18),
+            ("Fujifilm 200", "Película color de ISO medio", 50000, 14),
+            ("Kodak Tri-X 400 (Rebobinado)", "Película blanco y negro icónica", 60000, 10),
+            ("Kodak Proimage 100", "Película color de bajo ISO", 65000, 10),
+            ("Kodak Vision 250D (Rebobinado)", "Película de cine balanceada para luz", 65000, 12),
+            ("Ilford FP4+ 125", "Película blanco y negro de grano fin...", 55000, 10),
+            ("Kodak Portra 800", "Película color de alta sensibilidad", 120000, 10),
+            ("Fujifilm 400", "Película color versátil con tonos", 65000, 15)
         ]
         cursor.executemany("INSERT INTO catalogo (nombre_producto, categoria, precio, stock) VALUES (?, ?, ?, ?)", productos)
 
@@ -76,7 +83,7 @@ def registrar_usuario(nombre, email, password, telefono):
         conn.commit()
         return True
     except sqlite3.IntegrityError:
-        return False # El email ya existe
+        return False
     finally:
         conn.close()
 
@@ -87,7 +94,7 @@ def verificar_login(email, password):
     cursor.execute("SELECT id, nombre, rol FROM usuarios WHERE email=? AND password=?", (email, hashed))
     user = cursor.fetchone()
     conn.close()
-    return user # Retorna (id, nombre, rol) o None
+    return user
 
 def obtener_catalogo():
     conn = sqlite3.connect("pedidos.db")
