@@ -2,7 +2,7 @@ import streamlit as st
 import database
 import pandas as pd
 
-# Configuración de página - Estética Tarántula Taller / Safelight (Oscura y minimalista)
+# Configuración de página - Estética Tarántula Taller
 st.set_page_config(page_title="Tarántula Taller", page_icon="🕷️", layout="centered")
 
 st.markdown('''
@@ -19,9 +19,9 @@ st.markdown('''
     header {visibility: hidden;}
     footer {visibility: hidden;}
     
-    /* Estilizar los botones primarios (como el botón verde brillante de "Message") */
+    /* Estilizar los botones primarios (Verde brillante tipo Spotify/Safelight) */
     .stButton>button { 
-        background-color: #1ed760; /* Verde brillante tipo Spotify/Safelight */
+        background-color: #1ed760; 
         color: #000000; 
         border-radius: 30px; 
         border: none; 
@@ -49,13 +49,22 @@ st.markdown('''
     p { color: #a0a0a0; margin-bottom: 0rem; }
     h1, h2, h3 { color: #ffffff; font-weight: 600; }
     
-    /* Inputs y formularios oscuros */
+    /* Inputs y formularios oscuros (Aplica para la pestaña de Revelado) */
     .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
-        background-color: #1f1f1f;
+        background-color: #161616;
         color: white;
         border: 1px solid #333;
         border-radius: 10px;
     }
+    
+    /* Estilos para los expanders (Aplica para la pestaña de Bóveda) */
+    [data-testid="stExpander"] {
+        background-color: #161616;
+        border: 1px solid #333;
+        border-radius: 15px;
+    }
+    [data-testid="stExpander"] summary { color: #ffffff; font-weight: bold; }
+    [data-testid="stExpander"] p { color: #a0a0a0; }
     
     /* Pestañas (Tabs) */
     .stTabs [data-baseweb="tab-list"] { background-color: #0b0b0b; }
@@ -155,17 +164,16 @@ else:
         tab_cliente1, tab_cliente2, tab_cliente3 = st.tabs(["🛒 Catálogo", "📦 Revelado", "📁 Bóveda"])
         
         with tab_cliente1:
-            st.image("https://images.unsplash.com/photo-1549264875-e854ba0d10b7?w=800&q=80", use_column_width=True) # Imagen de banner tipo Safelight
+            # Solución al error TypeError usando HTML directo en lugar de st.image
+            st.markdown('<img src="https://images.unsplash.com/photo-1549264875-e854ba0d10b7?w=800&q=80" style="width: 100%; border-radius: 15px; margin-bottom: 15px;" alt="Banner">', unsafe_allow_html=True)
             st.write("Laboratorio de fotografía analógica. Revelado, digitalización y venta de rollos.")
             st.markdown("<br>", unsafe_allow_html=True)
             
             cat_df = database.obtener_catalogo()
             
             for index, row in cat_df.iterrows():
-                # Replicando el layout de la captura (Imagen/Círculo gris, texto, botón +)
                 c1, c2, c3 = st.columns([1, 4, 1])
                 with c1:
-                    # Simulación del fondo gris curvo del rollo
                     st.markdown('''
                         <div style="background-color:#d9d9d9; height:60px; width:60px; border-radius:15px; display:flex; align-items:center; justify-content:center;">
                             <span style="color:#000; font-size:24px;">🎞️</span>
@@ -181,10 +189,10 @@ else:
             
             st.markdown("<br><br>", unsafe_allow_html=True)
             st.markdown("<p style='text-align:center;'>Looking for something else?<br>Message</p>", unsafe_allow_html=True)
-            st.button("Message") # Botón verde estilo Spotify/Safelight
+            st.button("Message")
                                 
         with tab_cliente2:
-            st.subheader("Solicitar Revelado")
+            st.markdown("### Solicitar Revelado")
             with st.form("solicitar_revelado"):
                 cat = database.obtener_catalogo()
                 opciones_rollos = cat['nombre_producto'].tolist()
@@ -204,7 +212,7 @@ else:
                     st.success("¡Solicitud enviada a Tarántula Taller!")
                     
         with tab_cliente3:
-            st.subheader("Tus Negativos Digitales")
+            st.markdown("### Tus Negativos Digitales")
             mis_pedidos = database.obtener_pedidos_usuario(st.session_state['user_id'])
             if mis_pedidos.empty:
                 st.info("Aún no tienes rollos en la bóveda.")
