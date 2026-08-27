@@ -33,26 +33,28 @@ def init_db():
         stock INTEGER
     )''')
     
-    # Insertar los 16 rollos exactos de las imágenes
+    # FORZAR LOS 16 ROLLOS: Si hay menos de 16, borramos e insertamos la lista correcta
     cursor.execute("SELECT COUNT(*) FROM catalogo")
-    if cursor.fetchone()[0] == 0:
+    if cursor.fetchone()[0] != 16:
+        cursor.execute("DELETE FROM catalogo") # Limpiamos el catálogo viejo
+        
         productos = [
-            ("Kodak Double X 250 (Rebobinado)", "Película cinematográfica blanco y negro", 40000, 15),
-            ("Kodak Gold 200", "Película color con saturación cálida", 60000, 20),
-            ("Kodak Portra 400", "Película profesional color con tonos", 100000, 10),
-            ("Kentmere 400 (Rebobinado)", "Película blanco y negro económica", 45000, 12),
-            ("Kodak Colorplus 200", "Película color de ISO medio", 60000, 25),
-            ("Kodak Tri-X 400 120", "Película formato medio blanco y negro", 65000, 8),
-            ("Kodak Portra 800 120", "Película formato medio de alta sensi...", 120000, 5),
-            ("Kodak Portra 400 120", "Versión formato medio de la películ...", 100000, 5),
-            ("Kodak Ultramax 400", "Película color de alta sensibilidad", 65000, 18),
-            ("Fujifilm 200", "Película color de ISO medio", 50000, 14),
-            ("Kodak Tri-X 400 (Rebobinado)", "Película blanco y negro icónica", 60000, 10),
-            ("Kodak Proimage 100", "Película color de bajo ISO", 65000, 10),
-            ("Kodak Vision 250D (Rebobinado)", "Película de cine balanceada para luz", 65000, 12),
-            ("Ilford FP4+ 125", "Película blanco y negro de grano fin...", 55000, 10),
-            ("Kodak Portra 800", "Película color de alta sensibilidad", 120000, 10),
-            ("Fujifilm 400", "Película color versátil con tonos", 65000, 15)
+            ("Kodak Double X 250 (Rebobinado)", "Blanco y negro", 40000, 15),
+            ("Kodak Gold 200", "Color", 60000, 20),
+            ("Kodak Portra 400", "Color profesional", 100000, 10),
+            ("Kentmere 400", "Blanco y negro económica", 45000, 12),
+            ("Kodak Colorplus 200", "Color ISO medio", 60000, 25),
+            ("Kodak Tri-X 400 120", "Formato medio B/N", 65000, 8),
+            ("Kodak Portra 800 120", "Formato medio color", 120000, 5),
+            ("Kodak Portra 400 120", "Formato medio color", 100000, 5),
+            ("Kodak Ultramax 400", "Color", 65000, 18),
+            ("Fujifilm 200", "Color", 50000, 14),
+            ("Kodak Tri-X 400 (Rebobinado)", "Blanco y negro", 60000, 10),
+            ("Kodak Proimage 100", "Color", 65000, 10),
+            ("Kodak Vision 250D (Rebobinado)", "Cine color", 65000, 12),
+            ("Ilford FP4+ 125", "Blanco y negro", 55000, 10),
+            ("Kodak Portra 800", "Color profesional", 120000, 10),
+            ("Fujifilm 400", "Color versátil", 65000, 15)
         ]
         cursor.executemany("INSERT INTO catalogo (nombre_producto, categoria, precio, stock) VALUES (?, ?, ?, ?)", productos)
 
