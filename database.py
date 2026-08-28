@@ -1,144 +1,116 @@
-import sqlite3
+import streamlit as st
 import pandas as pd
 import bcrypt
 from datetime import datetime
+from streamlit_gsheets import GSheetsConnection
+
+# Obtener la conexión a Google Sheets
+def get_conn():
+    return st.connection("gsheets", type=GSheetsConnection)
 
 def init_db():
-    conn = sqlite3.connect("pedidos.db")
-    cursor = conn.cursor()
-    
-    # Tabla de Usuarios
-    cursor.execute('''CREATE TABLE IF NOT EXISTS usuarios (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre TEXT,
-        email TEXT UNIQUE,
-        password TEXT,
-        telefono TEXT,
-        rol TEXT
-    )''')
-    
-    # Insertar admin
-    cursor.execute("SELECT COUNT(*) FROM usuarios WHERE rol='admin'")
-    if cursor.fetchone()[0] == 0:
-        # Generar hash con bcrypt
-        admin_pass = bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        cursor.execute("INSERT INTO usuarios (nombre, email, password, telefono, rol) VALUES (?, ?, ?, ?, ?)",
-                       ("Admin Tarantula", "admin@taller.com", admin_pass, "0000000000", "admin"))
-
-    # Tabla de Catálogo
-    cursor.execute('''CREATE TABLE IF NOT EXISTS catalogo (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre_producto TEXT,
-        categoria TEXT,
-        precio REAL,
-        stock INTEGER
-    )''')
-    
-    # FORZAR LOS 16 ROLLOS: Si hay menos de 16, borramos e insertamos la lista correcta
-    cursor.execute("SELECT COUNT(*) FROM catalogo")
-    if cursor.fetchone()[0] != 16:
-        cursor.execute("DELETE FROM catalogo") # Limpiamos el catálogo viejo
-        
-        productos = [
-            ("Kodak Double X 250 (Rebobinado)", "Blanco y negro", 40000, 15),
-            ("Kodak Gold 200", "Color", 60000, 20),
-            ("Kodak Portra 400", "Color profesional", 100000, 10),
-            ("Kentmere 400", "Blanco y negro económica", 45000, 12),
-            ("Kodak Colorplus 200", "Color ISO medio", 60000, 25),
-            ("Kodak Tri-X 400 120", "Formato medio B/N", 65000, 8),
-            ("Kodak Portra 800 120", "Formato medio color", 120000, 5),
-            ("Kodak Portra 400 120", "Formato medio color", 100000, 5),
-            ("Kodak Ultramax 400", "Color", 65000, 18),
-            ("Fujifilm 200", "Color", 50000, 14),
-            ("Kodak Tri-X 400 (Rebobinado)", "Blanco y negro", 60000, 10),
-            ("Kodak Proimage 100", "Color", 65000, 10),
-            ("Kodak Vision 250D (Rebobinado)", "Cine color", 65000, 12),
-            ("Ilford FP4+ 125", "Blanco y negro", 55000, 10),
-            ("Kodak Portra 800", "Color profesional", 120000, 10),
-            ("Fujifilm 400", "Color versátil", 65000, 15)
-        ]
-        cursor.executemany("INSERT INTO catalogo (nombre_producto, categoria, precio, stock) VALUES (?, ?, ?, ?)", productos)
-
-    # Tabla de Pedidos / Servicios
-    cursor.execute('''CREATE TABLE IF NOT EXISTS pedidos (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        fecha TEXT,
-        item_solicitado TEXT,
-        cantidad INTEGER,
-        tipo_servicio TEXT,
-        observaciones TEXT,
-        estado TEXT,
-        link_descarga TEXT,
-        FOREIGN KEY(user_id) REFERENCES usuarios(id)
-    )''')
-
-    conn.commit()
-    conn.close()
+    # En Google Sheets, las tablas ya están creadas.
+    pass
 
 def registrar_usuario(nombre, email, password, telefono):
-    conn = sqlite3.connect("pedidos.db")
-    cursor = conn.cursor()
-    try:
-        # Generar hash con bcrypt
-        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        cursor.execute("INSERT INTO usuarios (nombre, email, password, telefono, rol) VALUES (?, ?, ?, ?, ?)",
-                       (nombre, email, hashed, telefono, "cliente"))
-        conn.commit()
-        return True
-    except sqlite3.IntegrityError:
+    conn = get_conn()
+    usuarios_df = conn.read(worksheet="usuarios")
+    
+    # Verificar si el correo ya existe (ignorando valores nulos si la hoja está vacía)
+    if not usuarios_df.empty and email in usuarios_df['email'].values:
         return False
-    finally:
-        conn.close()
+
+    hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    nuevo_id = int(usuarios_df['id'].max() + 1) if not usuarios_df.empty and pd.notna(usuarios_df['id'].max()) else 1
+    
+    nuevo_usuario = pd.DataFrame([{
+        "id": nuevo_id,
+        "nombre": nombre,
+        "email": email,
+        "password": hashed,
+        "telefono": telefono,
+        "rol": "cliente"
+    }])
+    
+    updated_df = pd.concat([usuarios_df, nuevo_usuario], ignore_index=True)
+    conn.update(worksheet="usuarios", data=updated_df)
+    
+    # Limpiar caché para asegurar que la app lea los datos actualizados
+    st.cache_data.clear()
+    return True
 
 def verificar_login(email, password):
-    conn = sqlite3.connect("pedidos.db")
-    cursor = conn.cursor()
-    # Buscar al usuario solo por email
-    cursor.execute("SELECT id, nombre, rol, password FROM usuarios WHERE email=?", (email,))
-    user = cursor.fetchone()
-    conn.close()
+    conn = get_conn()
+    usuarios_df = conn.read(worksheet="usuarios")
     
-    # Si el usuario existe, verificar la contraseña contra el hash
-    if user:
-        db_hash = user[3]
+    if usuarios_df.empty:
+        return None
+        
+    # Filtrar el usuario por email
+    user_row = usuarios_df[usuarios_df['email'] == email]
+    
+    if not user_row.empty:
+        db_hash = str(user_row.iloc[0]['password'])
         if bcrypt.checkpw(password.encode('utf-8'), db_hash.encode('utf-8')):
-            return (user[0], user[1], user[2]) # Retornar id, nombre, rol sin el hash
-    
+            return (int(user_row.iloc[0]['id']), str(user_row.iloc[0]['nombre']), str(user_row.iloc[0]['rol']))
+            
     return None
 
 def obtener_catalogo():
-    conn = sqlite3.connect("pedidos.db")
-    df = pd.read_sql_query("SELECT * FROM catalogo", conn)
-    conn.close()
-    return df
+    conn = get_conn()
+    return conn.read(worksheet="catalogo").dropna(how="all")
 
 def guardar_pedido(user_id, item_solicitado, cantidad, tipo_servicio, observaciones):
-    conn = sqlite3.connect("pedidos.db")
-    cursor = conn.cursor()
+    conn = get_conn()
+    pedidos_df = conn.read(worksheet="pedidos")
     fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    cursor.execute('''INSERT INTO pedidos (user_id, fecha, item_solicitado, cantidad, tipo_servicio, observaciones, estado, link_descarga)
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
-                   (user_id, fecha, item_solicitado, cantidad, tipo_servicio, observaciones, "Recibido en taller", ""))
-    conn.commit()
-    conn.close()
+    
+    nuevo_id = int(pedidos_df['id'].max() + 1) if not pedidos_df.empty and pd.notna(pedidos_df['id'].max()) else 1
+    
+    nuevo_pedido = pd.DataFrame([{
+        "id": nuevo_id,
+        "user_id": user_id,
+        "fecha": fecha,
+        "item_solicitado": item_solicitado,
+        "cantidad": cantidad,
+        "tipo_servicio": tipo_servicio,
+        "observaciones": observaciones,
+        "estado": "Recibido en taller",
+        "link_descarga": ""
+    }])
+    
+    updated_df = pd.concat([pedidos_df, nuevo_pedido], ignore_index=True)
+    conn.update(worksheet="pedidos", data=updated_df)
+    st.cache_data.clear()
 
 def obtener_pedidos_usuario(user_id):
-    conn = sqlite3.connect("pedidos.db")
-    df = pd.read_sql_query(f"SELECT id, fecha, item_solicitado, cantidad, tipo_servicio, estado, link_descarga FROM pedidos WHERE user_id={user_id} ORDER BY id DESC", conn)
-    conn.close()
-    return df
+    conn = get_conn()
+    pedidos_df = conn.read(worksheet="pedidos")
+    if pedidos_df.empty:
+        return pd.DataFrame()
+    return pedidos_df[pedidos_df['user_id'] == user_id].sort_values(by='id', ascending=False)
 
 def obtener_todos_pedidos():
-    conn = sqlite3.connect("pedidos.db")
-    df = pd.read_sql_query('''SELECT p.id, u.nombre, u.email, u.telefono, p.fecha, p.item_solicitado, p.cantidad, p.tipo_servicio, p.estado, p.link_descarga 
-                              FROM pedidos p JOIN usuarios u ON p.user_id = u.id ORDER BY p.id DESC''', conn)
-    conn.close()
-    return df
+    conn = get_conn()
+    pedidos_df = conn.read(worksheet="pedidos")
+    usuarios_df = conn.read(worksheet="usuarios")
+    
+    if pedidos_df.empty or usuarios_df.empty:
+        return pd.DataFrame()
+        
+    # Hacer un JOIN entre pedidos y usuarios
+    merged_df = pd.merge(pedidos_df, usuarios_df[['id', 'nombre', 'email', 'telefono']], left_on='user_id', right_on='id', suffixes=('', '_user'))
+    return merged_df[['id', 'nombre', 'email', 'telefono', 'fecha', 'item_solicitado', 'cantidad', 'tipo_servicio', 'estado', 'link_descarga']].sort_values(by='id', ascending=False)
 
 def actualizar_pedido(pedido_id, nuevo_estado, link_descarga):
-    conn = sqlite3.connect("pedidos.db")
-    cursor = conn.cursor()
-    cursor.execute("UPDATE pedidos SET estado=?, link_descarga=? WHERE id=?", (nuevo_estado, link_descarga, pedido_id))
-    conn.commit()
-    conn.close()
+    conn = get_conn()
+    pedidos_df = conn.read(worksheet="pedidos")
+    
+    if not pedidos_df.empty:
+        # Encontrar la fila del pedido y actualizar
+        mask = pedidos_df['id'] == pedido_id
+        pedidos_df.loc[mask, 'estado'] = nuevo_estado
+        pedidos_df.loc[mask, 'link_descarga'] = link_descarga
+        
+        conn.update(worksheet="pedidos", data=pedidos_df)
+        st.cache_data.clear()
