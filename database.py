@@ -1,6 +1,6 @@
 import sqlite3
 import pandas as pd
-import hashlib
+import bcrypt
 from datetime import datetime
 
 def init_db():
@@ -20,7 +20,8 @@ def init_db():
     # Insertar admin
     cursor.execute("SELECT COUNT(*) FROM usuarios WHERE rol='admin'")
     if cursor.fetchone()[0] == 0:
-        admin_pass = hashlib.sha256("admin123".encode()).hexdigest()
+        # Generar hash con bcrypt
+        admin_pass = bcrypt.hashpw("admin123".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         cursor.execute("INSERT INTO usuarios (nombre, email, password, telefono, rol) VALUES (?, ?, ?, ?, ?)",
                        ("Admin Tarantula", "admin@taller.com", admin_pass, "0000000000", "admin"))
 
@@ -79,7 +80,8 @@ def registrar_usuario(nombre, email, password, telefono):
     conn = sqlite3.connect("pedidos.db")
     cursor = conn.cursor()
     try:
-        hashed = hashlib.sha256(password.encode()).hexdigest()
+        # Generar hash con bcrypt
+        hashed = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         cursor.execute("INSERT INTO usuarios (nombre, email, password, telefono, rol) VALUES (?, ?, ?, ?, ?)",
                        (nombre, email, hashed, telefono, "cliente"))
         conn.commit()
@@ -92,11 +94,18 @@ def registrar_usuario(nombre, email, password, telefono):
 def verificar_login(email, password):
     conn = sqlite3.connect("pedidos.db")
     cursor = conn.cursor()
-    hashed = hashlib.sha256(password.encode()).hexdigest()
-    cursor.execute("SELECT id, nombre, rol FROM usuarios WHERE email=? AND password=?", (email, hashed))
+    # Buscar al usuario solo por email
+    cursor.execute("SELECT id, nombre, rol, password FROM usuarios WHERE email=?", (email,))
     user = cursor.fetchone()
     conn.close()
-    return user
+    
+    # Si el usuario existe, verificar la contraseña contra el hash
+    if user:
+        db_hash = user[3]
+        if bcrypt.checkpw(password.encode('utf-8'), db_hash.encode('utf-8')):
+            return (user[0], user[1], user[2]) # Retornar id, nombre, rol sin el hash
+    
+    return None
 
 def obtener_catalogo():
     conn = sqlite3.connect("pedidos.db")
