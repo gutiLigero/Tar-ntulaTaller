@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TARÁNTULA CORP. — Optics & Design</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- AUTH MODAL -->
+  <div id="auth-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>TARÁNTULA CORP.</h2>
+        <p>Optics & Design Division</p>
+      </div>
+
+      <div class="tabs">
+        <button id="tab-btn-login" class="tab-btn active" onclick="switchAuthTab('login')">Employee Login</button>
+        <button id="tab-btn-register" class="tab-btn" onclick="switchAuthTab('register')">Onboarding</button>
+      </div>
+
+      <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+        <label>Employee Email</label>
+        <input type="email" id="login-email" required />
+        <label>Passcode</label>
+        <input type="password" id="login-password" required />
+        <button type="submit" class="btn-lumon">Authenticate</button>
+      </form>
+
+      <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
+        <label>Full Designation (Name)</label>
+        <input type="text" id="reg-name" required />
+        <label>Assigned Email</label>
+        <input type="email" id="reg-email" required />
+        <label>Contact Ext. (WhatsApp)</label>
+        <input type="text" id="reg-phone" placeholder="573000000000" />
+        <label>Passcode</label>
+        <input type="password" id="reg-password" required />
+        <button type="submit" class="btn-lumon">Submit Orientation Form</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN APP CONTAINER -->
+  <div id="app-container" class="hidden">
+    <header class="app-header">
+      <div>
+        <h1>TARÁNTULA CORP.</h1>
+        <p class="subtitle">Optics & Design Division</p>
+      </div>
+      <div class="header-actions">
+        <span id="user-badge" class="user-badge"></span>
+        <button class="btn-outline" onclick="logout()">Sever Session</button>
+      </div>
+    </header>
+
+    <nav class="main-nav">
+      <button class="nav-tab active" onclick="switchMainTab('procurement')">Procurement</button>
+      <button class="nav-tab" onclick="switchMainTab('processing')">Processing</button>
+      <button class="nav-tab" onclick="switchMainTab('archive')">The Archive</button>
+      <button id="admin-tab-btn" class="nav-tab hidden" onclick="switchMainTab('admin')">Macrodata Refinement (Admin)</button>
+      <button class="nav-tab cart-trigger" onclick="toggleCartDrawer()">
+        Receptacle (<span id="cart-counter">0</span>)
+      </button>
+    </nav>
+
+    <main class="content-area">
+      <!-- 1. PROCUREMENT -->
+      <section id="procurement-section" class="tab-section">
+        <h2>Approved Materials</h2>
+        <div id="catalog-container" class="product-list">
+          <p class="loading-state">Querying inventory...</p>
+        </div>
+      </section>
+
+      <!-- 2. PROCESSING (REVELADO) -->
+      <section id="processing-section" class="tab-section hidden">
+        <h2>Chemical Refinement</h2>
+        <form id="lab-form" class="standard-form" onsubmit="handleLabSubmit(event)">
+          <label>Refinement Method</label>
+          <select id="lab-type">
+            <option value="A color">A color</option>
+            <option value="Blanco y Negro">Blanco y Negro</option>
+          </select>
+
+          <label>Unit Count</label>
+          <input type="number" id="lab-qty" value="1" min="1" required />
+
+          <label>Deviations / Notes (Push/Pull)</label>
+          <textarea id="lab-obs" rows="3"></textarea>
+
+          <button type="submit" class="btn-lumon">Submit to Lab</button>
+        </form>
+      </section>
+
+      <!-- 3. ARCHIVE -->
+      <section id="archive-section" class="tab-section hidden">
+        <h2>The Archive</h2>
+        <div id="archive-container" class="orders-list">
+          <p class="loading-state">Retrieving records...</p>
+        </div>
+      </section>
+
+      <!-- 4. ADMIN -->
+      <section id="admin-section" class="tab-section hidden">
+        <h2>Macrodata Refinement (Admin)</h2>
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Employee</th>
+              <th>Directive</th>
+              <th>Qty</th>
+              <th>Status</th>
+              <th>Link</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="admin-orders-tbody"></tbody>
+        </table>
+      </section>
+    </main>
+
+    <!-- CART DRAWER -->
+    <div id="cart-drawer" class="drawer">
+      <div class="drawer-header">
+        <h3>Order Receptacle</h3>
+        <button class="close-btn" onclick="toggleCartDrawer()">✕</button>
+      </div>
+      <div id="drawer-items" class="drawer-items">
+        <p class="empty-state">Receptacle is empty.</p>
+      </div>
+      <div class="drawer-footer">
+        <div class="total-row">
+          <span>Total Allocation:</span>
+          <span id="drawer-total">$ 0 COP</span>
+        </div>
+        <button class="btn-lumon" onclick="checkoutWhatsApp()">Authorize Requisition</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
