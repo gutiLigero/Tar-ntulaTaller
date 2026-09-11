@@ -48,3 +48,30 @@ input, select, textarea { border: 1px solid var(--lumon-green); padding: 8px 10p
 
 .toast { position: fixed; bottom: 20px; right: 20px; background: var(--lumon-green); color: #fff; padding: 10px 15px; font-family: 'IBM Plex Mono', monospace; display: none; box-shadow: 3px 3px 0px #000; z-index: 200; }
 .hidden { display: none !important; }
+
+/* Footer Styles */
+.app-footer {
+  margin-top: 40px;
+  border-top: 2px solid var(--lumon-green);
+  padding-top: 20px;
+  color: var(--lumon-muted);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.footer-section h4 {
+  font-size: 13px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--lumon-border);
+  padding-bottom: 4px;
+}
+
+.footer-section p {
+  font-size: 12px;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
