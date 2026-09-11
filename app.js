@@ -120,12 +120,13 @@ async function loadCatalog() {
       const price = parseFloat(prod.precio) || 0;
       const row = document.createElement("div");
       row.className = "product-row";
+      // NOTA: Se añadieron comillas simples alrededor de '${prod.id}' para que JS lo lea como texto
       row.innerHTML = `
         <div>
           <strong style="color:var(--t-red); font-family:'Archivo Black'; font-size:1.1rem; text-transform:uppercase;">${prod.nombre_producto}</strong>
           <p style="font-weight: 600; margin-top:5px;">$ ${price.toLocaleString()} COP</p>
         </div>
-        <button class="btn-secondary" style="margin-left: 10px;" onclick="addToCart(${prod.id}, '${prod.nombre_producto}', ${price})">AGREGAR</button>
+        <button class="btn-secondary" style="margin-left: 10px;" onclick="addToCart('${prod.id}', '${prod.nombre_producto}', ${price})">AGREGAR</button>
       `;
       container.appendChild(row);
     });
