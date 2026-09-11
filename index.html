@@ -3,41 +3,41 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TARÁNTULA CORP. — Optics & Design</title>
+  <title>TARÁNTULA TALLER — Analog Photography</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <!-- AUTH MODAL -->
   <div id="auth-modal" class="modal">
     <div class="modal-content">
-      <div class="modal-header">
-        <h2>TARÁNTULA CORP.</h2>
-        <p>Optics & Design Division</p>
+      <div class="modal-header" style="margin-bottom: 20px;">
+        <h2 style="border:none; margin-bottom:0;">TARÁNTULA TALLER</h2>
+        <p style="font-family: 'Space Grotesk'; font-weight: 600;">PORTAL DE CLIENTES</p>
       </div>
 
-      <div class="tabs">
-        <button id="tab-btn-login" class="tab-btn active" onclick="switchAuthTab('login')">Employee Login</button>
-        <button id="tab-btn-register" class="tab-btn" onclick="switchAuthTab('register')">Onboarding</button>
+      <div class="main-nav" style="border:none; margin-bottom:15px;">
+        <button id="tab-btn-login" class="nav-tab active" onclick="switchAuthTab('login')">INICIAR SESIÓN</button>
+        <button id="tab-btn-register" class="nav-tab" onclick="switchAuthTab('register')">REGISTRARSE</button>
       </div>
 
-      <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
-        <label>Employee Email</label>
+      <form id="login-form" class="standard-form" onsubmit="handleLogin(event)">
+        <label>Correo Electrónico</label>
         <input type="email" id="login-email" required />
-        <label>Passcode</label>
+        <label>Contraseña</label>
         <input type="password" id="login-password" required />
-        <button type="submit" class="btn-lumon">Authenticate</button>
+        <button type="submit" class="btn-primary" style="margin-top: 10px;">ENTRAR AL TALLER</button>
       </form>
 
-      <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
-        <label>Full Designation (Name)</label>
+      <form id="register-form" class="standard-form hidden" onsubmit="handleRegister(event)">
+        <label>Nombre Completo</label>
         <input type="text" id="reg-name" required />
-        <label>Assigned Email</label>
+        <label>Correo Electrónico</label>
         <input type="email" id="reg-email" required />
-        <label>Contact Ext. (WhatsApp)</label>
-        <input type="text" id="reg-phone" placeholder="573000000000" />
-        <label>Passcode</label>
+        <label>WhatsApp (Ej: 573148565655)</label>
+        <input type="text" id="reg-phone" required />
+        <label>Contraseña</label>
         <input type="password" id="reg-password" required />
-        <button type="submit" class="btn-lumon">Submit Orientation Form</button>
+        <button type="submit" class="btn-primary" style="margin-top: 10px;">CREAR CUENTA</button>
       </form>
     </div>
   </div>
@@ -46,123 +46,144 @@
   <div id="app-container" class="hidden">
     <header class="app-header">
       <div>
-        <h1>TARÁNTULA CORP.</h1>
-        <p class="subtitle">Optics & Design Division</p>
+        <h1 style="margin: 0;">TARÁNTULA TALLER</h1>
+        <p style="font-weight: 700; color: var(--t-red);">LABORATORIO DE FOTOGRAFÍA ANALÓGICA</p>
       </div>
-      <div class="header-actions">
-        <span id="user-badge" class="user-badge"></span>
-        <button class="btn-outline" onclick="logout()">Sever Session</button>
+      <div style="text-align: right;">
+        <span id="user-badge" style="display:block; font-weight:700; margin-bottom:5px;"></span>
+        <button class="btn-secondary" onclick="logout()">CERRAR SESIÓN</button>
       </div>
     </header>
 
     <nav class="main-nav">
-      <button class="nav-tab active" onclick="switchMainTab('procurement')">Procurement</button>
-      <button class="nav-tab" onclick="switchMainTab('processing')">Processing</button>
-      <button class="nav-tab" onclick="switchMainTab('archive')">The Archive</button>
-      <button id="admin-tab-btn" class="nav-tab hidden" onclick="switchMainTab('admin')">Macrodata Refinement (Admin)</button>
-      <button class="nav-tab cart-trigger" onclick="toggleCartDrawer()">
-        Receptacle (<span id="cart-counter">0</span>)
+      <button class="nav-tab active" onclick="switchMainTab('catalog')">COMPRAR ROLLOS</button>
+      <button class="nav-tab" onclick="switchMainTab('pickup')">DOMICILIOS / RECOGIDAS</button>
+      <button class="nav-tab" onclick="switchMainTab('archive')">MIS PEDIDOS</button>
+      <button id="admin-tab-btn" class="nav-tab hidden" onclick="switchMainTab('admin')">ADMINISTRACIÓN</button>
+      <button class="nav-tab cart-trigger" style="margin-left:auto; background:var(--t-yellow);" onclick="toggleCartDrawer()">
+        CARRITO (<span id="cart-counter">0</span>)
       </button>
     </nav>
 
     <main class="content-area">
-      <!-- 1. PROCUREMENT -->
-      <section id="procurement-section" class="tab-section">
-        <h2>Approved Materials</h2>
-        <div id="catalog-container" class="product-list">
-          <p class="loading-state">Querying inventory...</p>
+      <!-- 1. CATÁLOGO -->
+      <section id="catalog-section" class="tab-section">
+        <h2>STOCK DE ROLLOS</h2>
+        <div id="catalog-container">
+          <p class="loading-state" style="font-weight: 600;">Cargando inventario...</p>
         </div>
       </section>
 
-      <!-- 2. PROCESSING (REVELADO) -->
-      <section id="processing-section" class="tab-section hidden">
-        <h2>Chemical Refinement</h2>
-        <form id="lab-form" class="standard-form" onsubmit="handleLabSubmit(event)">
-          <label>Refinement Method</label>
-          <select id="lab-type">
-            <option value="A color">A color</option>
-            <option value="Blanco y Negro">Blanco y Negro</option>
-          </select>
-
-          <label>Unit Count</label>
-          <input type="number" id="lab-qty" value="1" min="1" required />
-
-          <label>Deviations / Notes (Push/Pull)</label>
-          <textarea id="lab-obs" rows="3"></textarea>
-
-          <button type="submit" class="btn-lumon">Submit to Lab</button>
-        </form>
+      <!-- 2. BUZÓN DE DOMICILIOS -->
+      <section id="pickup-section" class="tab-section hidden">
+        <h2>PROGRAMAR RECOGIDA</h2>
+        <div class="pickup-card" style="flex-direction: column; align-items: stretch;">
+          <p style="margin-bottom: 15px; font-weight: 600; color: var(--t-red);">
+            Escríbenos si quieres que pasemos por tu rollo. Llena los datos para agendar tu domicilio.
+          </p>
+          <form id="pickup-form" onsubmit="schedulePickup(event)">
+            <label>Dirección de recogida</label>
+            <input type="text" id="pickup-address" placeholder="Ej. Calle 10 #43-20, Envigado" required />
+            
+            <label>Fecha sugerida</label>
+            <input type="date" id="pickup-date" required />
+            
+            <label>Hora aproximada</label>
+            <input type="time" id="pickup-time" required />
+            
+            <label>¿Qué vamos a recoger?</label>
+            <textarea id="pickup-notes" rows="2" placeholder="Ej. 2 rollos de 35mm para revelar a color"></textarea>
+            
+            <button type="submit" class="btn-primary" style="width: 100%;">AGENDAR RECOGIDA</button>
+          </form>
+        </div>
+        
+        <h3 style="margin-top: 30px; border-bottom: 3px solid var(--t-red); padding-bottom: 5px;">TUS RECOGIDAS PENDIENTES</h3>
+        <div id="timeline-container">
+            <p class="loading-state" style="font-weight: 600;">No hay recogidas programadas actualmente.</p>
+        </div>
       </section>
 
-      <!-- 3. ARCHIVE -->
+      <!-- 3. ARCHIVO (MIS PEDIDOS) -->
       <section id="archive-section" class="tab-section hidden">
-        <h2>The Archive</h2>
-        <div id="archive-container" class="orders-list">
-          <p class="loading-state">Retrieving records...</p>
+        <h2>ESTADO DEL LABORATORIO</h2>
+        <div id="archive-container">
+          <p class="loading-state" style="font-weight: 600;">Cargando historial...</p>
         </div>
       </section>
 
       <!-- 4. ADMIN -->
       <section id="admin-section" class="tab-section hidden">
-        <h2>Macrodata Refinement (Admin)</h2>
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Employee</th>
-              <th>Directive</th>
-              <th>Qty</th>
-              <th>Status</th>
-              <th>Link</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="admin-orders-tbody"></tbody>
-        </table>
+        <h2>PANEL DE ADMINISTRACIÓN</h2>
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; background: #fff; border: 3px solid var(--t-red);">
+            <thead style="background: var(--t-yellow); border-bottom: 3px solid var(--t-red);">
+              <tr>
+                <th style="padding: 10px; text-align: left; border-right: 2px solid var(--t-red);">ID</th>
+                <th style="padding: 10px; text-align: left; border-right: 2px solid var(--t-red);">Cliente</th>
+                <th style="padding: 10px; text-align: left; border-right: 2px solid var(--t-red);">Pedido</th>
+                <th style="padding: 10px; text-align: left; border-right: 2px solid var(--t-red);">Estado</th>
+                <th style="padding: 10px; text-align: left; border-right: 2px solid var(--t-red);">Link Descarga</th>
+                <th style="padding: 10px; text-align: left;">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="admin-orders-tbody"></tbody>
+          </table>
+        </div>
       </section>
     </main>
 
     <!-- FACILITY INFO FOOTER -->
-    <footer class="app-footer">
-      <div class="footer-grid">
-        <div class="footer-section">
-          <h4>Facility Location</h4>
-          <p>Calle 47 43-88</p>
+    <footer class="app-footer" style="margin-top: 40px; border-top: 4px solid var(--t-red); padding-top: 20px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+        <div>
+          <h4 style="font-family: 'Archivo Black'; color: var(--t-red); margin-bottom: 5px;">UBICACIÓN</h4>
+          <p style="font-weight: 600;">Calle 47 43-88</p>
           <p>Medellín 050016, Antioquia</p>
         </div>
-        <div class="footer-section">
-          <h4>Operating Hours</h4>
-          <p>11:00 AM - 7:00 PM</p>
-          <p>Status: <span style="color: var(--lumon-green); font-weight: bold;">ACTIVE</span></p>
+        <div>
+          <h4 style="font-family: 'Archivo Black'; color: var(--t-red); margin-bottom: 5px;">HORARIO</h4>
+          <p style="font-weight: 600;">11:00 AM - 7:00 PM</p>
+          <p>Estado: <span style="color: var(--t-red); font-weight: bold;">ABIERTO HOY</span></p>
         </div>
-        <div class="footer-section">
-          <h4>Access Protocol</h4>
-          <p>Physical visits for drop-off or procurement require prior authorization.</p>
-          <p>Contact <strong>tallertarantula@gmail.com</strong> or via Ext. +57 314 8565655 to schedule.</p>
+        <div>
+          <h4 style="font-family: 'Archivo Black'; color: var(--t-red); margin-bottom: 5px;">CONTACTO</h4>
+          <p style="font-weight: 600;">Visitas con previo aviso.</p>
+          <p>tallertarantula@gmail.com<br>WhatsApp: +57 314 8565655</p>
         </div>
       </div>
     </footer>
 
-    <!-- CART DRAWER -->
+    <!-- CARRITO CON UPSELL -->
     <div id="cart-drawer" class="drawer">
-      <div class="drawer-header">
-        <h3>Order Receptacle</h3>
-        <button class="close-btn" onclick="toggleCartDrawer()">✕</button>
+      <div class="drawer-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin:0; border:none; padding:0;">TU PEDIDO</h3>
+        <button onclick="toggleCartDrawer()" style="background:none; border:none; font-size:24px; color: var(--t-red); cursor:pointer; font-weight: bold;">✕</button>
       </div>
+      
       <div id="drawer-items" class="drawer-items">
-        <p class="empty-state">Receptacle is empty.</p>
+        <p style="font-weight: 600;">El carrito está vacío.</p>
       </div>
+      
       <div class="drawer-footer">
-        <div class="total-row">
-          <span>Total Allocation:</span>
-          <span id="drawer-total">$ 0 COP</span>
+        <!-- UPSELL / CROSS-SELL -->
+        <div class="upsell-box">
+          <p>¿TIENES ROLLOS POR REVELAR?</p>
+          <button class="btn-secondary" style="width: 100%; margin-bottom: 10px;" onclick="addDevService('Revelado a Color')">+ REVELADO A COLOR ($20.000)</button>
+          <button class="btn-secondary" style="width: 100%;" onclick="addDevService('Revelado B/N')">+ REVELADO B/N ($25.000)</button>
         </div>
-        <button class="btn-lumon" onclick="checkoutWhatsApp()">Authorize Requisition</button>
+
+        <div style="display:flex; justify-content:space-between; font-size: 1.2rem; font-weight:700; margin-bottom: 15px; color: var(--t-red);">
+          <span>TOTAL:</span>
+          <span id="drawer-total">$ 0</span>
+        </div>
+        <button class="btn-primary" style="width:100%;" onclick="checkoutWhatsApp()">ENVIAR PEDIDO POR WPP</button>
       </div>
     </div>
   </div>
 
-  <div id="toast" class="toast"></div>
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" style="position: fixed; bottom: 20px; right: 20px; background: var(--t-yellow); color: var(--t-red); padding: 15px 20px; font-family: 'Archivo Black'; display: none; box-shadow: 4px 4px 0px var(--t-red); border: 3px solid var(--t-red); z-index: 200;"></div>
 
   <script src="app.js"></script>
 </body>
