@@ -1,5 +1,5 @@
 // MODIFICA ESTA URL cuando despliegues en Render
-const API_BASE_URL = "http://127.0.0.1:8000"; 
+const API_BASE_URL = "https://backend-tarantula.onrender.com";
 const WHATSAPP_NUMBER = "573005431546";
 
 let token = localStorage.getItem("tarantula_token");
