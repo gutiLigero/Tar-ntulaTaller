@@ -20,6 +20,7 @@ function showToast(msg) {
   setTimeout(() => { t.style.display = "none"; }, 3000);
 }
 
+// --- AUTENTICACIÓN ---
 function switchAuthTab(tab) {
   document.getElementById("tab-btn-login").classList.toggle("active", tab === "login");
   document.getElementById("tab-btn-register").classList.toggle("active", tab === "register");
@@ -39,7 +40,7 @@ async function handleLogin(e) {
       body: JSON.stringify({ email, password })
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || "Authentication error");
+    if (!res.ok) throw new Error(data.detail || "Error de autenticación.");
 
     token = data.access_token;
     currentUser = data.user;
@@ -69,9 +70,9 @@ async function handleRegister(e) {
       body: JSON.stringify(payload)
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || "Orientation failed");
+    if (!res.ok) throw new Error(data.detail || "Error en el registro.");
 
-    alert(data.message);
+    alert("Cuenta creada con éxito. Ya puedes iniciar sesión.");
     switchAuthTab("login");
   } catch (err) {
     alert(err.message);
@@ -83,9 +84,10 @@ function logout() {
   location.reload();
 }
 
+// --- VISTAS PRINCIPALES ---
 function setupAppView() {
   document.getElementById("app-container").classList.remove("hidden");
-  document.getElementById("user-badge").innerText = `ID: ${currentUser.nombre} (${currentUser.rol})`;
+  document.getElementById("user-badge").innerText = `HOLA, ${currentUser.nombre.toUpperCase()}`;
   
   if (currentUser.rol === "admin") {
     document.getElementById("admin-tab-btn").classList.remove("hidden");
@@ -98,14 +100,15 @@ function switchMainTab(tab) {
   document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
   document.querySelectorAll(".tab-section").forEach(s => s.classList.add("hidden"));
 
-  if (tab === "procurement") document.getElementById("procurement-section").classList.remove("hidden");
-  else if (tab === "processing") document.getElementById("processing-section").classList.remove("hidden");
+  if (tab === "catalog") document.getElementById("catalog-section").classList.remove("hidden");
+  else if (tab === "pickup") document.getElementById("pickup-section").classList.remove("hidden");
   else if (tab === "archive") { document.getElementById("archive-section").classList.remove("hidden"); loadArchive(); }
   else if (tab === "admin") { document.getElementById("admin-section").classList.remove("hidden"); loadAdminOrders(); }
   
   event.target.classList.add("active");
 }
 
+// --- CATÁLOGO Y CARRITO ---
 async function loadCatalog() {
   try {
     const res = await fetch(`${API_BASE_URL}/catalog`);
@@ -119,16 +122,26 @@ async function loadCatalog() {
       row.className = "product-row";
       row.innerHTML = `
         <div>
-          <strong style="color:#074D39; font-family:'IBM Plex Mono'; font-size:15px;">${prod.nombre_producto}</strong>
-          <p style="color:#7A8B94; font-family:'IBM Plex Mono'; font-size:13px;">$ ${price.toLocaleString()} COP</p>
+          <strong style="color:var(--t-red); font-family:'Archivo Black'; font-size:1.1rem; text-transform:uppercase;">${prod.nombre_producto}</strong>
+          <p style="font-weight: 600; margin-top:5px;">$ ${price.toLocaleString()} COP</p>
         </div>
-        <button class="btn-lumon" onclick="addToCart(${prod.id}, '${prod.nombre_producto}', ${price})">Requisition</button>
+        <button class="btn-secondary" style="margin-left: 10px;" onclick="addToCart(${prod.id}, '${prod.nombre_producto}', ${price})">AGREGAR</button>
       `;
       container.appendChild(row);
     });
   } catch (err) {
-    console.error("Failed to load catalog", err);
+    console.error("Error cargando el catálogo", err);
   }
+}
+
+function toggleCartDrawer() {
+  document.getElementById("cart-drawer").classList.toggle("open");
+}
+
+function addDevService(serviceName) {
+  const price = serviceName.includes("B/N") ? 25000 : 20000;
+  const serviceId = serviceName.includes("B/N") ? 9002 : 9001; 
+  addToCart(serviceId, serviceName + " + Digitalizado", price);
 }
 
 function addToCart(id, name, price) {
@@ -136,11 +149,7 @@ function addToCart(id, name, price) {
   else cart[id] = { id, nombre: name, precio: price, cantidad: 1 };
   
   renderCart();
-  showToast(`Item secured: ${name}`);
-}
-
-function toggleCartDrawer() {
-  document.getElementById("cart-drawer").classList.toggle("open");
+  showToast(`AGREGADO: ${name}`);
 }
 
 function renderCart() {
@@ -154,7 +163,7 @@ function renderCart() {
   const items = Object.values(cart);
   
   if (items.length === 0) {
-    container.innerHTML = `<p class="empty-state">Receptacle is empty.</p>`;
+    container.innerHTML = `<p style="font-weight:600;">El carrito está vacío.</p>`;
   } else {
     items.forEach(item => {
       totalCount += item.cantidad;
@@ -162,10 +171,12 @@ function renderCart() {
       totalPrice += subtotal;
 
       const div = document.createElement("div");
+      div.style.borderBottom = "2px solid var(--t-red)";
+      div.style.paddingBottom = "10px";
       div.style.marginBottom = "10px";
       div.innerHTML = `
-        <strong>${item.cantidad}x ${item.nombre}</strong><br>
-        <span style="color:#7A8B94;">$ ${subtotal.toLocaleString()} COP</span>
+        <strong style="color:var(--t-red); font-family:'Archivo Black';">${item.cantidad}x ${item.nombre}</strong><br>
+        <span style="font-weight:600;">$ ${subtotal.toLocaleString()} COP</span>
       `;
       container.appendChild(div);
     });
@@ -177,7 +188,7 @@ function renderCart() {
 
 async function checkoutWhatsApp() {
   const items = Object.values(cart);
-  if (items.length === 0) return alert("Receptacle is empty.");
+  if (items.length === 0) return alert("El carrito está vacío.");
 
   try {
     await fetch(`${API_BASE_URL}/orders/cart`, {
@@ -186,45 +197,89 @@ async function checkoutWhatsApp() {
       body: JSON.stringify({ items })
     });
 
-    let msg = "Tarántula - Optics & Design Division\nApproved Requisition:\n\n";
+    let msg = "🕸️ *TARÁNTULA TALLER - NUEVO PEDIDO* 🕸️\n\nHola, quiero confirmar el siguiente pedido:\n\n";
     let total = 0;
     items.forEach(it => {
       msg += `▪️ ${it.cantidad}x ${it.nombre}\n`;
       total += it.precio * it.cantidad;
     });
-    msg += `\n*Total Allocation:* $ ${total.toLocaleString()} COP\n\nPlease provide transfer coordinates.`;
+    msg += `\n*Total a pagar:* $ ${total.toLocaleString()} COP\n\nQuedo atento para coordinar el pago y la entrega.`;
 
     cart = {};
     renderCart();
     toggleCartDrawer();
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, "_blank");
   } catch (err) {
-    alert("Error logging purchase.");
+    alert("Error procesando el pedido.");
   }
 }
 
-async function handleLabSubmit(e) {
+// --- DOMICILIOS Y GOOGLE CALENDAR ---
+async function schedulePickup(e) {
   e.preventDefault();
-  const payload = {
-    tipo_servicio: document.getElementById("lab-type").value,
-    cantidad: parseInt(document.getElementById("lab-qty").value),
-    observaciones: document.getElementById("lab-obs").value
-  };
+  
+  const address = document.getElementById("pickup-address").value;
+  const date = document.getElementById("pickup-date").value;
+  const time = document.getElementById("pickup-time").value;
+  const notes = document.getElementById("pickup-notes").value;
+  
+  const dateTimeStr = `${date} a las ${time}`;
+  const fullNotes = `Dirección: ${address} | Fecha: ${dateTimeStr} | Detalles: ${notes}`;
 
   try {
-    const res = await fetch(`${API_BASE_URL}/orders/lab`, {
+    await fetch(`${API_BASE_URL}/orders/lab`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ 
+        tipo_servicio: "Recogida a Domicilio", 
+        cantidad: 1, 
+        observaciones: fullNotes 
+      })
     });
-    const data = await res.json();
-    alert(data.message);
-    document.getElementById("lab-obs").value = "";
+    
+    showToast("¡DOMICILIO AGENDADO!");
+    
+    const timeline = document.getElementById("timeline-container");
+    if(timeline.innerHTML.includes("No hay")) timeline.innerHTML = "";
+    
+    const card = document.createElement("div");
+    card.className = "pickup-card";
+    card.innerHTML = `
+      <div>
+        <h4 style="color:var(--t-red); font-family:'Archivo Black'; font-size:1.2rem; margin-bottom:5px;">RECOGIDA PROGRAMADA</h4>
+        <p><strong>Día:</strong> ${date}</p>
+        <p><strong>Lugar:</strong> ${address}</p>
+      </div>
+      <button class="btn-secondary" style="margin-left: 10px;" onclick="generateGCalLink('${date}', '${time}', '${address}', '${notes}')">
+        + GOOGLE CALENDAR
+      </button>
+    `;
+    timeline.prepend(card);
+    document.getElementById("pickup-form").reset();
+
   } catch (err) {
-    alert("Submission error.");
+    alert("Error al agendar la recogida.");
   }
 }
 
+function generateGCalLink(dateStr, timeStr, address, notes) {
+  const cleanDate = dateStr.replace(/-/g, '');
+  const cleanTime = timeStr.replace(/:/g, '') + '00';
+  
+  const hour = parseInt(timeStr.split(':')[0]);
+  const endHour = (hour + 1).toString().padStart(2, '0');
+  const cleanEndTime = `${endHour}${timeStr.split(':')[1]}00`;
+
+  const dates = `${cleanDate}T${cleanTime}/${cleanDate}T${cleanEndTime}`;
+  const title = encodeURIComponent("Tarántula Taller - Recogida de Rollos");
+  const details = encodeURIComponent(`Detalles de recogida: ${notes}\n\nRecuerda tener los rollos listos.`);
+  const location = encodeURIComponent(address);
+  
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${dates}&details=${details}&location=${location}`;
+  window.open(url, '_blank');
+}
+
+// --- ARCHIVO Y ADMIN ---
 async function loadArchive() {
   try {
     const res = await fetch(`${API_BASE_URL}/orders/my-orders`, {
@@ -235,7 +290,7 @@ async function loadArchive() {
     container.innerHTML = "";
 
     if (orders.length === 0) {
-      container.innerHTML = "<p>No data nodes available in your archive.</p>";
+      container.innerHTML = "<p style='font-weight:600;'>No tienes pedidos recientes.</p>";
       return;
     }
 
@@ -244,11 +299,11 @@ async function loadArchive() {
       card.className = "order-card";
       card.innerHTML = `
         <div>
-          <strong>Directive #${o.id} - ${o.item_solicitado} (x${o.cantidad})</strong>
-          <p>Status: ${o.estado}</p>
+          <strong style="font-family:'Archivo Black'; color:var(--t-red);">ORDEN #${o.id} - ${o.item_solicitado} (x${o.cantidad})</strong>
+          <p style="margin-top:5px; font-weight:600;">Estado: ${o.estado}</p>
         </div>
         <div>
-          ${o.link_descarga ? `<a href="${o.link_descarga}" target="_blank" class="btn-outline">EXTRACT NODE</a>` : '<span style="color:#7A8B94; font-size:12px;">Refining...</span>'}
+          ${o.link_descarga ? `<a href="${o.link_descarga}" target="_blank" class="btn-secondary" style="text-decoration:none;">DESCARGAR SCANS</a>` : '<span style="font-weight:600; color:var(--t-red);">En proceso...</span>'}
         </div>
       `;
       container.appendChild(card);
@@ -269,21 +324,25 @@ async function loadAdminOrders() {
 
     orders.forEach(o => {
       const tr = document.createElement("tr");
+      tr.style.borderBottom = "2px solid var(--t-red)";
       tr.innerHTML = `
-        <td>${o.id}</td>
-        <td>${o.nombre}<br><small>${o.email}<br>${o.telefono || '-'}</small></td>
-        <td>${o.item_solicitado}</td>
-        <td>${o.cantidad}</td>
-        <td>
-          <select id="status-${o.id}">
+        <td style="padding:10px; border-right:2px solid var(--t-red);"><strong>#${o.id}</strong></td>
+        <td style="padding:10px; border-right:2px solid var(--t-red);">${o.nombre}<br><small>${o.telefono || '-'}</small></td>
+        <td style="padding:10px; border-right:2px solid var(--t-red);"><strong>${o.item_solicitado}</strong> (x${o.cantidad})<br><small>${o.tipo_servicio}</small></td>
+        <td style="padding:10px; border-right:2px solid var(--t-red);">
+          <select id="status-${o.id}" style="margin:0; padding:5px; width:100%;">
             <option value="Recibido en taller" ${o.estado === 'Recibido en taller' ? 'selected' : ''}>Recibido en taller</option>
             <option value="En Proceso Químico" ${o.estado === 'En Proceso Químico' ? 'selected' : ''}>En Proceso Químico</option>
             <option value="Escaneándose" ${o.estado === 'Escaneándose' ? 'selected' : ''}>Escaneándose</option>
             <option value="Listo (Archivos Subidos)" ${o.estado === 'Listo (Archivos Subidos)' ? 'selected' : ''}>Listo (Archivos Subidos)</option>
           </select>
         </td>
-        <td><input type="text" id="link-${o.id}" value="${o.link_descarga || ''}" placeholder="Download link" style="width:100px;" /></td>
-        <td><button class="btn-outline" onclick="commitAdminUpdate(${o.id})">Commit</button></td>
+        <td style="padding:10px; border-right:2px solid var(--t-red);">
+          <input type="text" id="link-${o.id}" value="${o.link_descarga || ''}" placeholder="Link Drive" style="margin:0; padding:5px; width:100px;" />
+        </td>
+        <td style="padding:10px;">
+          <button class="btn-primary" style="padding: 5px 10px;" onclick="commitAdminUpdate(${o.id})">GUARDAR</button>
+        </td>
       `;
       tbody.appendChild(tr);
     });
@@ -302,8 +361,8 @@ async function commitAdminUpdate(id) {
       headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
       body: JSON.stringify({ nuevo_estado, link_descarga })
     });
-    if (res.ok) showToast(`Directive #${id} committed.`);
+    if (res.ok) showToast(`ORDEN #${id} ACTUALIZADA.`);
   } catch (err) {
-    alert("Error updating order.");
+    alert("Error al actualizar la orden.");
   }
 }
