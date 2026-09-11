@@ -129,3 +129,58 @@ label { font-weight: 700; color: var(--t-red); display: block; margin-bottom: 5p
 .upsell-box p { font-weight: 700; color: var(--t-red); margin-bottom: 10px; }
 
 .hidden { display: none !important; }
+/* --- ADAPTACIÓN PARA MÓVILES (RESPONSIVE) --- */
+@media (max-width: 600px) {
+  body { font-size: 14px; }
+  h1 { font-size: 1.8rem; line-height: 1.1; }
+  h2 { font-size: 1.3rem; }
+  
+  /* Ajustar el modal de inicio de sesión */
+  .modal-content { 
+    padding: 20px; 
+    width: 90%; 
+    margin: 20px auto; 
+  }
+  
+  /* Centrar y apilar el encabezado */
+  .app-header { 
+    flex-direction: column; 
+    text-align: center; 
+    gap: 15px; 
+  }
+  .app-header div { 
+    text-align: center !important; 
+  }
+  
+  /* Apilar los botones de navegación */
+  .main-nav { 
+    flex-direction: column; 
+    gap: 5px; 
+  }
+  .nav-tab { 
+    width: 100%; 
+    margin-left: 0 !important; 
+  }
+  
+  /* Tarjetas de productos: imagen arriba, botón abajo */
+  .product-row, .order-card { 
+    flex-direction: column; 
+    align-items: flex-start; 
+    gap: 15px; 
+  }
+  .product-row button, .order-card button { 
+    width: 100%; 
+    margin-left: 0 !important; 
+  }
+  
+  /* El carrito ya no se sale de la pantalla */
+  .drawer { 
+    width: 100%; 
+    right: -100%; 
+  }
+  
+  /* El footer en una sola columna */
+  .footer-grid { 
+    grid-template-columns: 1fr; 
+  }
+}
