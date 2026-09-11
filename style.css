@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@400;600&display=swap');
+
+:root {
+  --lumon-green: #074D39;
+  --lumon-bg: #F4F5F5;
+  --lumon-surface: #FFFFFF;
+  --lumon-border: #D1D5D8;
+  --lumon-text: #0F171A;
+  --lumon-muted: #7A8B94;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background-color: var(--lumon-bg); color: var(--lumon-text); font-family: 'Inter', sans-serif; font-size: 15px; }
+h1, h2, h3, label, .tab-btn, .nav-tab, .btn-lumon, .btn-outline, .user-badge { font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: 0.05em; }
+h1, h2, h3 { color: var(--lumon-green); border-bottom: 2px solid var(--lumon-green); padding-bottom: 5px; margin-bottom: 15px; }
+
+.modal { position: fixed; inset: 0; background: rgba(15, 23, 26, 0.7); display: flex; align-items: center; justify-content: center; z-index: 100; }
+.modal-content { background: var(--lumon-surface); border: 2px solid var(--lumon-green); padding: 30px; width: 100%; max-width: 420px; box-shadow: 6px 6px 0px var(--lumon-green); }
+.tabs, .main-nav { display: flex; border-bottom: 2px solid var(--lumon-green); margin-bottom: 20px; }
+.tab-btn, .nav-tab { background: transparent; border: none; padding: 10px 15px; color: var(--lumon-muted); font-weight: 600; cursor: pointer; }
+.tab-btn.active, .nav-tab.active { color: var(--lumon-green); background: #E8ECEB; border-bottom: 4px solid var(--lumon-green); }
+
+.auth-form, .standard-form { display: flex; flex-direction: column; gap: 10px; }
+label { font-size: 13px; font-weight: 600; color: var(--lumon-green); }
+input, select, textarea { border: 1px solid var(--lumon-green); padding: 8px 10px; font-family: 'IBM Plex Mono', monospace; border-radius: 0; outline: none; }
+
+.btn-lumon { background-color: var(--lumon-green); color: #fff; border: 2px solid var(--lumon-green); padding: 10px; cursor: pointer; font-weight: 600; transition: 0.1s; }
+.btn-lumon:hover { background-color: var(--lumon-bg); color: var(--lumon-green); box-shadow: 4px 4px 0px var(--lumon-green); }
+.btn-outline { background: transparent; border: 1px solid var(--lumon-green); color: var(--lumon-green); padding: 6px 12px; cursor: pointer; font-size: 12px; }
+
+#app-container { max-width: 900px; margin: 0 auto; padding: 20px; overflow-x: hidden; }
+.app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.subtitle { color: var(--lumon-muted); font-size: 13px; }
+
+.product-row, .order-card { background: var(--lumon-surface); border: 1px solid var(--lumon-border); padding: 15px; margin-bottom: 10px; box-shadow: 2px 2px 0px var(--lumon-border); display: flex; justify-content: space-between; align-items: center; }
+
+.drawer { position: fixed; top: 0; right: -420px; width: 400px; height: 100vh; background: var(--lumon-surface); border-left: 2px solid var(--lumon-green); box-shadow: -4px 0px 10px rgba(0,0,0,0.1); transition: right 0.25s ease; z-index: 90; display: flex; flex-direction: column; }
+.drawer.open { right: 0; }
+.drawer-header, .drawer-footer { padding: 20px; border-bottom: 1px solid var(--lumon-border); }
+.drawer-footer { border-top: 1px solid var(--lumon-border); border-bottom: none; margin-top: auto; }
+.drawer-items { padding: 20px; overflow-y: auto; flex-grow: 1; }
+.total-row { display: flex; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-weight: 700; margin-bottom: 15px; font-size: 16px; color: var(--lumon-green); }
+.close-btn { background: transparent; border: none; font-size: 18px; float: right; cursor: pointer; color: var(--lumon-text); }
+
+.admin-table { width: 100%; border-collapse: collapse; background: var(--lumon-surface); font-size: 13px; display: block; overflow-x: auto; }
+.admin-table th, .admin-table td { border: 1px solid var(--lumon-border); padding: 8px; text-align: left; }
+.admin-table th { background: #E8ECEB; font-family: 'IBM Plex Mono', monospace; }
+
+.toast { position: fixed; bottom: 20px; right: 20px; background: var(--lumon-green); color: #fff; padding: 10px 15px; font-family: 'IBM Plex Mono', monospace; display: none; box-shadow: 3px 3px 0px #000; z-index: 200; }
+.hidden { display: none !important; }
